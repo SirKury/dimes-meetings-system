@@ -177,3 +177,26 @@ dimes-meetings-system/
 ├── pnpm-workspace.yaml
 ├── turbo.json
 └── README.md
+
+---
+
+## 8. Setup técnico inicial (Fase 1)
+
+Implementado en esta fase:
+- Monorepo con `pnpm workspace` + `turbo`.
+- `apps/web`: Next.js + TypeScript + Tailwind CSS.
+- `apps/api`: NestJS con módulos base (`auth`, `users`, `roles`, `establishments`).
+- `prisma/`: esquema inicial PostgreSQL para `Role`, `Establishment`, `User`.
+- Seeds iniciales para roles mínimos, establecimientos de ejemplo y usuario administrador.
+- `.env.example` y `docker-compose.yml` para PostgreSQL local.
+
+Comandos base:
+
+```bash
+pnpm install
+docker compose up -d
+pnpm db:generate
+pnpm db:migrate
+pnpm db:seed
+pnpm dev
+```

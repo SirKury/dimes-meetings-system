@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: dimes-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dimes_meetings
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - dimes_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  dimes_postgres_data:

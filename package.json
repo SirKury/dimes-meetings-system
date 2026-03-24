@@ -1,0 +1,20 @@
+{
+  "name": "dimes-meetings-system",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.12.2",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "typecheck": "turbo run typecheck",
+    "db:generate": "pnpm --filter @dimes/prisma db:generate",
+    "db:migrate": "pnpm --filter @dimes/prisma db:migrate",
+    "db:seed": "pnpm --filter @dimes/prisma db:seed"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.3",
+    "typescript": "^5.6.2"
+  }
+}
