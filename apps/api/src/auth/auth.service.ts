@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { verifyPassword } from '../common/security/password.util';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 
@@ -17,15 +18,16 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Base stub for phase 1; replace with password hashing verification in phase 2.
-    if (payload.password.length < 8) {
+    const isValidPassword = await verifyPassword(payload.password, user.passwordHash);
+    if (!isValidPassword) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const accessToken = await this.jwtService.signAsync({
       sub: user.id,
       email: user.email,
-      role: user.role.name
+      role: user.role.name,
+      establishmentId: user.establishmentId
     });
 
     return { accessToken };
