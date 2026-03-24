@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Role } from '@prisma/client';
+import { handlePrismaCreateError } from '../common/prisma-error.util';
 import { PrismaService } from '../prisma.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 
@@ -11,7 +12,11 @@ export class RolesService {
     return this.prisma.role.findMany({ orderBy: { name: 'asc' } });
   }
 
-  create(dto: CreateRoleDto): Promise<Role> {
-    return this.prisma.role.create({ data: dto });
+  async create(dto: CreateRoleDto): Promise<Role> {
+    try {
+      return await this.prisma.role.create({ data: dto });
+    } catch (error) {
+      handlePrismaCreateError(error, 'role');
+    }
   }
 }

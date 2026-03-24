@@ -151,7 +151,7 @@ Permisos funcionales limitados:
 
 ## 7. Estructura del repositorio
 
-Este proyecto debe respetar estrictamente la siguiente estructura monorepo:
+Este proyecto respeta la estructura monorepo:
 
 ```text
 dimes-meetings-system/
@@ -177,26 +177,59 @@ dimes-meetings-system/
 ├── pnpm-workspace.yaml
 ├── turbo.json
 └── README.md
+```
 
 ---
 
-## 8. Setup técnico inicial (Fase 1)
+## 8. Setup local recomendado
 
-Implementado en esta fase:
-- Monorepo con `pnpm workspace` + `turbo`.
-- `apps/web`: Next.js + TypeScript + Tailwind CSS.
-- `apps/api`: NestJS con módulos base (`auth`, `users`, `roles`, `establishments`).
-- `prisma/`: esquema inicial PostgreSQL para `Role`, `Establishment`, `User`.
-- Seeds iniciales para roles mínimos, establecimientos de ejemplo y usuario administrador.
-- `.env.example` y `docker-compose.yml` para PostgreSQL local.
+### Requisitos
+- Node.js 20+
+- pnpm 9+
+- Docker y Docker Compose
 
-Comandos base:
+### Pasos rápidos
 
 ```bash
+cp .env.example .env
 pnpm install
-docker compose up -d
+docker compose up -d postgres
 pnpm db:generate
 pnpm db:migrate
 pnpm db:seed
 pnpm dev
 ```
+
+Apps disponibles:
+- Web: `http://localhost:3000`
+- API: `http://localhost:3001/api`
+
+---
+
+## 9. Setup con Docker (servicios completos)
+
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
+
+Servicios:
+- PostgreSQL: `localhost:5432`
+- API: `localhost:3001`
+- Web: `localhost:3000`
+
+> Nota: para ejecutar migraciones/seed dentro de contenedores, use un contenedor temporal del workspace o ejecute esos comandos localmente con `pnpm`.
+
+---
+
+## 10. Calidad y validación
+
+Comandos sugeridos antes de subir cambios:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+```
+
+Para más detalles de la fase de refinamiento: `docs/phase-4-refinement.md`.
