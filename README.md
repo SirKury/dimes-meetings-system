@@ -200,3 +200,13 @@ pnpm db:migrate
 pnpm db:seed
 pnpm dev
 ```
+
+## 9. Avance Fase 3
+
+Se incorporan módulos base para:
+- compromisos (`commitments`)
+- dashboard (`dashboard/overview`)
+- adjuntos (`attachments`)
+- auditoría (`audit-logs`)
+
+Con reglas de visibilidad por rol y establecimiento en backend.

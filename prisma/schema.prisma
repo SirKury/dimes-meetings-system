@@ -24,6 +24,13 @@ enum MinuteStatus {
   FINAL
 }
 
+enum CommitmentStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
 model Role {
   id          String   @id @default(uuid())
   name        String   @unique
@@ -41,6 +48,9 @@ model Establishment {
   users        User[]
   meetings     Meeting[]
   participants Participant[]
+  commitments  Commitment[]
+  attachments  Attachment[]
+  auditLogs    AuditLog[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -62,6 +72,10 @@ model User {
   createdParticipants   Participant[]    @relation("ParticipantCreator")
   attendanceRegistries  Attendance[]     @relation("AttendanceRegistrar")
   createdMinutes        Minute[]         @relation("MinuteCreator")
+  createdCommitments    Commitment[]     @relation("CommitmentCreator")
+  assignedCommitments   Commitment[]     @relation("CommitmentResponsible")
+  uploadedAttachments   Attachment[]     @relation("AttachmentUploader")
+  performedAuditLogs    AuditLog[]       @relation("AuditActor")
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
 
@@ -70,19 +84,20 @@ model User {
 }
 
 model Meeting {
-  id              String             @id @default(uuid())
+  id              String               @id @default(uuid())
   title           String
   description     String?
   scheduledAt     DateTime
-  status          MeetingStatus      @default(SCHEDULED)
+  status          MeetingStatus        @default(SCHEDULED)
   establishmentId String
   createdById     String
-  establishment   Establishment      @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
-  createdBy       User               @relation("MeetingCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  establishment   Establishment        @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  createdBy       User                 @relation("MeetingCreator", fields: [createdById], references: [id], onDelete: Restrict)
   participants    MeetingParticipant[]
   minute          Minute?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  attachments     Attachment[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 
   @@index([establishmentId, scheduledAt])
   @@index([createdById])
@@ -106,34 +121,34 @@ model Participant {
 }
 
 model MeetingParticipant {
-  id           String      @id @default(uuid())
-  meetingId    String
+  id            String      @id @default(uuid())
+  meetingId     String
   participantId String
-  meeting      Meeting     @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-  participant  Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  attendance   Attendance?
-  createdAt    DateTime    @default(now())
+  meeting       Meeting     @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  attendance    Attendance?
+  createdAt     DateTime    @default(now())
 
   @@unique([meetingId, participantId])
   @@index([participantId])
 }
 
 model Attendance {
-  id                 String           @id @default(uuid())
-  meetingParticipantId String         @unique
-  status             AttendanceStatus
-  registeredById     String
-  registeredBy       User             @relation("AttendanceRegistrar", fields: [registeredById], references: [id], onDelete: Restrict)
-  meetingParticipant MeetingParticipant @relation(fields: [meetingParticipantId], references: [id], onDelete: Cascade)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
+  id                   String             @id @default(uuid())
+  meetingParticipantId String             @unique
+  status               AttendanceStatus
+  registeredById       String
+  registeredBy         User               @relation("AttendanceRegistrar", fields: [registeredById], references: [id], onDelete: Restrict)
+  meetingParticipant   MeetingParticipant @relation(fields: [meetingParticipantId], references: [id], onDelete: Cascade)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 
   @@index([registeredById])
 }
 
 model Minute {
-  id           String      @id @default(uuid())
-  meetingId    String      @unique
+  id           String       @id @default(uuid())
+  meetingId    String       @unique
   objective    String
   agenda       String
   development  String
@@ -142,10 +157,76 @@ model Minute {
   status       MinuteStatus @default(DRAFT)
   createdById  String
   finalizedAt  DateTime?
-  meeting      Meeting     @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-  createdBy    User        @relation("MinuteCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  meeting      Meeting      @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation("MinuteCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  commitments  Commitment[]
+  attachments  Attachment[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   @@index([createdById])
+}
+
+model Commitment {
+  id              String           @id @default(uuid())
+  minuteId        String
+  establishmentId String
+  description     String
+  dueDate         DateTime
+  status          CommitmentStatus @default(PENDING)
+  responsibleId   String?
+  createdById     String
+  completedAt     DateTime?
+  minute          Minute           @relation(fields: [minuteId], references: [id], onDelete: Cascade)
+  establishment   Establishment    @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  responsible     User?            @relation("CommitmentResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  createdBy       User             @relation("CommitmentCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  attachments     Attachment[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([minuteId])
+  @@index([establishmentId, status])
+  @@index([responsibleId])
+}
+
+model Attachment {
+  id              String        @id @default(uuid())
+  fileName        String
+  filePath        String
+  mimeType        String
+  sizeBytes       Int
+  establishmentId String
+  meetingId       String?
+  minuteId        String?
+  commitmentId    String?
+  uploadedById    String
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  meeting         Meeting?      @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  minute          Minute?       @relation(fields: [minuteId], references: [id], onDelete: Cascade)
+  commitment      Commitment?   @relation(fields: [commitmentId], references: [id], onDelete: Cascade)
+  uploadedBy      User          @relation("AttachmentUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  createdAt       DateTime      @default(now())
+
+  @@index([establishmentId])
+  @@index([meetingId])
+  @@index([minuteId])
+  @@index([commitmentId])
+}
+
+model AuditLog {
+  id              String        @id @default(uuid())
+  action          String
+  entity          String
+  entityId        String
+  metadata        Json?
+  performedById   String
+  establishmentId String
+  performedBy     User          @relation("AuditActor", fields: [performedById], references: [id], onDelete: Restrict)
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  createdAt       DateTime      @default(now())
+
+  @@index([establishmentId, createdAt])
+  @@index([entity, entityId])
+  @@index([performedById])
 }
