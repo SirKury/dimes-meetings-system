@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { handlePrismaCreateError } from '../common/prisma-error.util';
+import { hashPassword } from '../common/security/password.util';
 import { PrismaService } from '../prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
@@ -20,9 +21,10 @@ export class UsersService {
   }
 
   async create(dto: CreateUserDto): Promise<User> {
+    const passwordHash = await hashPassword(dto.password);
     const data: Prisma.UserCreateInput = {
       email: dto.email.toLowerCase(),
-      passwordHash: dto.password,
+      passwordHash,
       firstName: dto.firstName,
       lastName: dto.lastName,
       isActive: dto.isActive ?? true,
