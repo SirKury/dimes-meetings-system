@@ -1,5 +1,4 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { MeetingMinute, Prisma } from '@prisma/client';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { isGlobalRole } from '../common/auth-scope.util';
 import { handlePrismaCreateError } from '../common/prisma-error.util';
@@ -11,15 +10,15 @@ import { UpdateMeetingMinuteDto } from './dto/update-meeting-minute.dto';
 export class MeetingMinutesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByMeetingId(meetingId: string, user: AuthenticatedUser): Promise<MeetingMinute | null> {
+  async findByMeetingId(meetingId: string, user: AuthenticatedUser): Promise<unknown> {
     await this.ensureMeetingAccess(meetingId, user);
     return this.prisma.meetingMinute.findUnique({ where: { meetingId } });
   }
 
-  async create(dto: CreateMeetingMinuteDto, user: AuthenticatedUser): Promise<MeetingMinute> {
+  async create(dto: CreateMeetingMinuteDto, user: AuthenticatedUser): Promise<unknown> {
     await this.ensureMeetingAccess(dto.meetingId, user);
 
-    const data: Prisma.MeetingMinuteCreateInput = {
+    const data = {
       objective: dto.objective,
       agenda: dto.agenda,
       development: dto.development,
@@ -37,7 +36,7 @@ export class MeetingMinutesService {
     }
   }
 
-  async update(id: string, dto: UpdateMeetingMinuteDto, user: AuthenticatedUser): Promise<MeetingMinute> {
+  async update(id: string, dto: UpdateMeetingMinuteDto, user: AuthenticatedUser): Promise<unknown> {
     const minute = await this.prisma.meetingMinute.findUnique({ where: { id } });
     if (!minute) {
       throw new NotFoundException('Meeting minute not found');
@@ -47,7 +46,7 @@ export class MeetingMinutesService {
     return this.prisma.meetingMinute.update({ where: { id }, data: dto });
   }
 
-  async remove(id: string, user: AuthenticatedUser): Promise<MeetingMinute> {
+  async remove(id: string, user: AuthenticatedUser): Promise<unknown> {
     const minute = await this.prisma.meetingMinute.findUnique({ where: { id } });
     if (!minute) {
       throw new NotFoundException('Meeting minute not found');

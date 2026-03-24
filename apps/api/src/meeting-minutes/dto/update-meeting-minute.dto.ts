@@ -1,6 +1,6 @@
-import { MinuteStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import { MEETING_MINUTE_STATUS, MeetingMinuteStatusValue } from './create-meeting-minute.dto';
 
 export class UpdateMeetingMinuteDto {
   @Transform(({ value }: { value?: string }) => value?.trim())
@@ -31,6 +31,6 @@ export class UpdateMeetingMinuteDto {
   observations?: string;
 
   @IsOptional()
-  @IsEnum(MinuteStatus)
-  status?: MinuteStatus;
+  @IsIn(MEETING_MINUTE_STATUS)
+  status?: MeetingMinuteStatusValue;
 }

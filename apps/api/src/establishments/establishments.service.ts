@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Establishment } from '@prisma/client';
 import { handlePrismaCreateError } from '../common/prisma-error.util';
 import { PrismaService } from '../prisma.service';
 import { CreateEstablishmentDto } from './dto/create-establishment.dto';
@@ -8,11 +7,11 @@ import { CreateEstablishmentDto } from './dto/create-establishment.dto';
 export class EstablishmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(): Promise<Establishment[]> {
+  findAll(): Promise<unknown[]> {
     return this.prisma.establishment.findMany({ orderBy: { name: 'asc' } });
   }
 
-  async create(dto: CreateEstablishmentDto): Promise<Establishment> {
+  async create(dto: CreateEstablishmentDto): Promise<unknown> {
     try {
       return await this.prisma.establishment.create({ data: dto });
     } catch (error) {

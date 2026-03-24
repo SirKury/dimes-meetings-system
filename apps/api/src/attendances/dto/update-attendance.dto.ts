@@ -1,11 +1,11 @@
-import { AttendanceStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ATTENDANCE_STATUS, AttendanceStatusValue } from './create-attendance.dto';
 
 export class UpdateAttendanceDto {
   @IsOptional()
-  @IsEnum(AttendanceStatus)
-  status?: AttendanceStatus;
+  @IsIn(ATTENDANCE_STATUS)
+  status?: AttendanceStatusValue;
 
   @Transform(({ value }: { value?: string }) => value?.trim())
   @IsOptional()

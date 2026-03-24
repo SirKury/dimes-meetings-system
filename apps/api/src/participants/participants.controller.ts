@@ -10,7 +10,6 @@ import {
   Query,
   UseGuards
 } from '@nestjs/common';
-import { Participant } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -29,19 +28,13 @@ export class ParticipantsController {
 
   @Roles(SYSTEM_ROLES.SUPERADMIN, SYSTEM_ROLES.DIMES_ADMIN, SYSTEM_ROLES.DIMES_USER)
   @Get()
-  findAll(
-    @Query() query: MeetingIdQueryDto,
-    @CurrentUser() user: AuthenticatedUser
-  ): Promise<Participant[]> {
+  findAll(@Query() query: MeetingIdQueryDto, @CurrentUser() user: AuthenticatedUser): Promise<unknown[]> {
     return this.participantsService.findAll(query.meetingId, user);
   }
 
   @Roles(SYSTEM_ROLES.SUPERADMIN, SYSTEM_ROLES.DIMES_ADMIN, SYSTEM_ROLES.DIMES_USER)
   @Post()
-  create(
-    @Body() dto: CreateParticipantDto,
-    @CurrentUser() user: AuthenticatedUser
-  ): Promise<Participant> {
+  create(@Body() dto: CreateParticipantDto, @CurrentUser() user: AuthenticatedUser): Promise<unknown> {
     return this.participantsService.create(dto, user);
   }
 
@@ -51,16 +44,13 @@ export class ParticipantsController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateParticipantDto,
     @CurrentUser() user: AuthenticatedUser
-  ): Promise<Participant> {
+  ): Promise<unknown> {
     return this.participantsService.update(id, dto, user);
   }
 
   @Roles(SYSTEM_ROLES.SUPERADMIN, SYSTEM_ROLES.DIMES_ADMIN)
   @Delete(':id')
-  remove(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @CurrentUser() user: AuthenticatedUser
-  ): Promise<Participant> {
+  remove(@Param('id', new ParseUUIDPipe()) id: string, @CurrentUser() user: AuthenticatedUser): Promise<unknown> {
     return this.participantsService.remove(id, user);
   }
 }

@@ -1,6 +1,8 @@
-import { AttendanceStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+
+export const ATTENDANCE_STATUS = ['ATTENDED', 'ABSENT', 'EXCUSED'] as const;
+export type AttendanceStatusValue = (typeof ATTENDANCE_STATUS)[number];
 
 export class CreateAttendanceDto {
   @IsUUID()
@@ -9,8 +11,8 @@ export class CreateAttendanceDto {
   @IsUUID()
   participantId!: string;
 
-  @IsEnum(AttendanceStatus)
-  status!: AttendanceStatus;
+  @IsIn(ATTENDANCE_STATUS)
+  status!: AttendanceStatusValue;
 
   @Transform(({ value }: { value?: string }) => value?.trim())
   @IsOptional()

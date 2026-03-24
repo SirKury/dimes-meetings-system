@@ -1,5 +1,4 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { Meeting, Prisma } from '@prisma/client';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { establishmentScope, isGlobalRole } from '../common/auth-scope.util';
 import { handlePrismaCreateError } from '../common/prisma-error.util';
@@ -11,14 +10,14 @@ import { UpdateMeetingDto } from './dto/update-meeting.dto';
 export class MeetingsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(user: AuthenticatedUser): Promise<Meeting[]> {
+  findAll(user: AuthenticatedUser): Promise<unknown[]> {
     return this.prisma.meeting.findMany({
       where: establishmentScope(user),
       orderBy: { scheduledAt: 'desc' }
     });
   }
 
-  async findOne(id: string, user: AuthenticatedUser): Promise<Meeting> {
+  async findOne(id: string, user: AuthenticatedUser): Promise<any> {
     const meeting = await this.prisma.meeting.findUnique({ where: { id } });
     if (!meeting) {
       throw new NotFoundException('Meeting not found');
@@ -31,12 +30,12 @@ export class MeetingsService {
     return meeting;
   }
 
-  async create(dto: CreateMeetingDto, user: AuthenticatedUser): Promise<Meeting> {
+  async create(dto: CreateMeetingDto, user: AuthenticatedUser): Promise<unknown> {
     const establishmentId = isGlobalRole(user)
       ? (dto.establishmentId ?? user.establishmentId)
       : user.establishmentId;
 
-    const data: Prisma.MeetingCreateInput = {
+    const data = {
       title: dto.title,
       description: dto.description,
       scheduledAt: new Date(dto.scheduledAt),
@@ -52,14 +51,14 @@ export class MeetingsService {
     }
   }
 
-  async update(id: string, dto: UpdateMeetingDto, user: AuthenticatedUser): Promise<Meeting> {
+  async update(id: string, dto: UpdateMeetingDto, user: AuthenticatedUser): Promise<unknown> {
     await this.findOne(id, user);
 
     if (dto.establishmentId && !isGlobalRole(user)) {
       throw new ForbiddenException('Only SUPERADMIN can reassign establishment ownership');
     }
 
-    const data: Prisma.MeetingUpdateInput = {
+    const data = {
       title: dto.title,
       description: dto.description,
       scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
@@ -70,7 +69,7 @@ export class MeetingsService {
     return this.prisma.meeting.update({ where: { id }, data });
   }
 
-  async remove(id: string, user: AuthenticatedUser): Promise<Meeting> {
+  async remove(id: string, user: AuthenticatedUser): Promise<unknown> {
     await this.findOne(id, user);
     return this.prisma.meeting.delete({ where: { id } });
   }

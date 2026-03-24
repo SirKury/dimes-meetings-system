@@ -1,5 +1,4 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -13,12 +12,12 @@ export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Get()
-  findAll(): Promise<Role[]> {
+  findAll(): Promise<unknown[]> {
     return this.rolesService.findAll();
   }
 
   @Post()
-  create(@Body() dto: CreateRoleDto): Promise<Role> {
+  create(@Body() dto: CreateRoleDto): Promise<unknown> {
     return this.rolesService.create(dto);
   }
 }

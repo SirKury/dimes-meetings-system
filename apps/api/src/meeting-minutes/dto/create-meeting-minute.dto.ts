@@ -1,6 +1,8 @@
-import { MinuteStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+
+export const MEETING_MINUTE_STATUS = ['DRAFT', 'FINAL'] as const;
+export type MeetingMinuteStatusValue = (typeof MEETING_MINUTE_STATUS)[number];
 
 export class CreateMeetingMinuteDto {
   @IsUUID()
@@ -34,6 +36,6 @@ export class CreateMeetingMinuteDto {
   observations?: string;
 
   @IsOptional()
-  @IsEnum(MinuteStatus)
-  status?: MinuteStatus;
+  @IsIn(MEETING_MINUTE_STATUS)
+  status?: MeetingMinuteStatusValue;
 }

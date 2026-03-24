@@ -1,5 +1,4 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { Participant, Prisma } from '@prisma/client';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { isGlobalRole } from '../common/auth-scope.util';
 import { handlePrismaCreateError } from '../common/prisma-error.util';
@@ -11,15 +10,15 @@ import { UpdateParticipantDto } from './dto/update-participant.dto';
 export class ParticipantsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(meetingId: string, user: AuthenticatedUser): Promise<Participant[]> {
+  async findAll(meetingId: string, user: AuthenticatedUser): Promise<unknown[]> {
     await this.ensureMeetingAccess(meetingId, user);
     return this.prisma.participant.findMany({ where: { meetingId }, orderBy: { createdAt: 'asc' } });
   }
 
-  async create(dto: CreateParticipantDto, user: AuthenticatedUser): Promise<Participant> {
+  async create(dto: CreateParticipantDto, user: AuthenticatedUser): Promise<unknown> {
     await this.ensureMeetingAccess(dto.meetingId, user);
 
-    const data: Prisma.ParticipantCreateInput = {
+    const data = {
       fullName: dto.fullName,
       email: dto.email,
       position: dto.position,
@@ -36,14 +35,14 @@ export class ParticipantsService {
     }
   }
 
-  async update(id: string, dto: UpdateParticipantDto, user: AuthenticatedUser): Promise<Participant> {
+  async update(id: string, dto: UpdateParticipantDto, user: AuthenticatedUser): Promise<unknown> {
     const participant = await this.findOne(id, user);
 
     if (dto.establishmentId && !isGlobalRole(user)) {
       throw new ForbiddenException('Only SUPERADMIN can reassign participant establishment');
     }
 
-    const data: Prisma.ParticipantUpdateInput = {
+    const data = {
       fullName: dto.fullName,
       email: dto.email,
       position: dto.position,
@@ -55,12 +54,12 @@ export class ParticipantsService {
     return this.prisma.participant.update({ where: { id: participant.id }, data });
   }
 
-  async remove(id: string, user: AuthenticatedUser): Promise<Participant> {
+  async remove(id: string, user: AuthenticatedUser): Promise<unknown> {
     const participant = await this.findOne(id, user);
     return this.prisma.participant.delete({ where: { id: participant.id } });
   }
 
-  private async findOne(id: string, user: AuthenticatedUser): Promise<Participant> {
+  private async findOne(id: string, user: AuthenticatedUser): Promise<any> {
     const participant = await this.prisma.participant.findUnique({ where: { id } });
     if (!participant) {
       throw new NotFoundException('Participant not found');

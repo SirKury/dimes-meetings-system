@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
-import { IsDateString, IsEnum, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
-import { MeetingStatus } from '@prisma/client';
+import { IsDateString, IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { MEETING_STATUS, MeetingStatusValue } from './create-meeting.dto';
 
 export class UpdateMeetingDto {
   @Transform(({ value }: { value?: string }) => value?.trim())
@@ -20,8 +20,8 @@ export class UpdateMeetingDto {
   scheduledAt?: string;
 
   @IsOptional()
-  @IsEnum(MeetingStatus)
-  status?: MeetingStatus;
+  @IsIn(MEETING_STATUS)
+  status?: MeetingStatusValue;
 
   @IsOptional()
   @IsUUID()

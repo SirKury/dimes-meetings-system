@@ -1,5 +1,4 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { Attendance, Prisma } from '@prisma/client';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { isGlobalRole } from '../common/auth-scope.util';
 import { handlePrismaCreateError } from '../common/prisma-error.util';
@@ -11,16 +10,16 @@ import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 export class AttendancesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(meetingId: string, user: AuthenticatedUser): Promise<Attendance[]> {
+  async findAll(meetingId: string, user: AuthenticatedUser): Promise<unknown[]> {
     await this.ensureMeetingAccess(meetingId, user);
     return this.prisma.attendance.findMany({ where: { meetingId }, orderBy: { createdAt: 'asc' } });
   }
 
-  async create(dto: CreateAttendanceDto, user: AuthenticatedUser): Promise<Attendance> {
+  async create(dto: CreateAttendanceDto, user: AuthenticatedUser): Promise<unknown> {
     await this.ensureMeetingAccess(dto.meetingId, user);
     await this.ensureParticipantBelongsToMeeting(dto.participantId, dto.meetingId);
 
-    const data: Prisma.AttendanceCreateInput = {
+    const data = {
       status: dto.status,
       notes: dto.notes,
       meeting: { connect: { id: dto.meetingId } },
@@ -34,7 +33,7 @@ export class AttendancesService {
     }
   }
 
-  async update(id: string, dto: UpdateAttendanceDto, user: AuthenticatedUser): Promise<Attendance> {
+  async update(id: string, dto: UpdateAttendanceDto, user: AuthenticatedUser): Promise<unknown> {
     const attendance = await this.prisma.attendance.findUnique({ where: { id } });
     if (!attendance) {
       throw new NotFoundException('Attendance not found');
@@ -45,7 +44,7 @@ export class AttendancesService {
     return this.prisma.attendance.update({ where: { id }, data: dto });
   }
 
-  async remove(id: string, user: AuthenticatedUser): Promise<Attendance> {
+  async remove(id: string, user: AuthenticatedUser): Promise<unknown> {
     const attendance = await this.prisma.attendance.findUnique({ where: { id } });
     if (!attendance) {
       throw new NotFoundException('Attendance not found');

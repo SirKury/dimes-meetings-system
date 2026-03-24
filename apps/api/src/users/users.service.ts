@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, User } from '@prisma/client';
 import { handlePrismaCreateError } from '../common/prisma-error.util';
 import { hashPassword } from '../common/security/password.util';
 import { PrismaService } from '../prisma.service';
@@ -9,20 +8,20 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(): Promise<User[]> {
+  findAll(): Promise<unknown[]> {
     return this.prisma.user.findMany({ orderBy: { createdAt: 'desc' } });
   }
 
-  findByEmail(email: string): Promise<(User & { role: { name: string } }) | null> {
+  findByEmail(email: string): Promise<any | null> {
     return this.prisma.user.findUnique({
       where: { email: email.toLowerCase() },
       include: { role: { select: { name: true } } }
     });
   }
 
-  async create(dto: CreateUserDto): Promise<User> {
+  async create(dto: CreateUserDto): Promise<unknown> {
     const passwordHash = await hashPassword(dto.password);
-    const data: Prisma.UserCreateInput = {
+    const data = {
       email: dto.email.toLowerCase(),
       passwordHash,
       firstName: dto.firstName,

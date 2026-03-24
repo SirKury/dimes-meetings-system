@@ -1,6 +1,8 @@
 import { Transform } from 'class-transformer';
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
-import { MeetingStatus } from '@prisma/client';
+import { IsDateString, IsIn, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+
+export const MEETING_STATUS = ['SCHEDULED', 'COMPLETED', 'CANCELED'] as const;
+export type MeetingStatusValue = (typeof MEETING_STATUS)[number];
 
 export class CreateMeetingDto {
   @Transform(({ value }: { value: string }) => value?.trim())
@@ -19,8 +21,8 @@ export class CreateMeetingDto {
   scheduledAt!: string;
 
   @IsOptional()
-  @IsEnum(MeetingStatus)
-  status?: MeetingStatus;
+  @IsIn(MEETING_STATUS)
+  status?: MeetingStatusValue;
 
   @IsOptional()
   @IsUUID()

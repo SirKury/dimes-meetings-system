@@ -1,5 +1,4 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
-import { Meeting } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -17,22 +16,19 @@ export class MeetingsController {
 
   @Roles(SYSTEM_ROLES.SUPERADMIN, SYSTEM_ROLES.DIMES_ADMIN, SYSTEM_ROLES.DIMES_USER)
   @Get()
-  findAll(@CurrentUser() user: AuthenticatedUser): Promise<Meeting[]> {
+  findAll(@CurrentUser() user: AuthenticatedUser): Promise<unknown[]> {
     return this.meetingsService.findAll(user);
   }
 
   @Roles(SYSTEM_ROLES.SUPERADMIN, SYSTEM_ROLES.DIMES_ADMIN, SYSTEM_ROLES.DIMES_USER)
   @Get(':id')
-  findOne(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @CurrentUser() user: AuthenticatedUser
-  ): Promise<Meeting> {
+  findOne(@Param('id', new ParseUUIDPipe()) id: string, @CurrentUser() user: AuthenticatedUser): Promise<unknown> {
     return this.meetingsService.findOne(id, user);
   }
 
   @Roles(SYSTEM_ROLES.SUPERADMIN, SYSTEM_ROLES.DIMES_ADMIN, SYSTEM_ROLES.DIMES_USER)
   @Post()
-  create(@Body() dto: CreateMeetingDto, @CurrentUser() user: AuthenticatedUser): Promise<Meeting> {
+  create(@Body() dto: CreateMeetingDto, @CurrentUser() user: AuthenticatedUser): Promise<unknown> {
     return this.meetingsService.create(dto, user);
   }
 
@@ -42,13 +38,13 @@ export class MeetingsController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateMeetingDto,
     @CurrentUser() user: AuthenticatedUser
-  ): Promise<Meeting> {
+  ): Promise<unknown> {
     return this.meetingsService.update(id, dto, user);
   }
 
   @Roles(SYSTEM_ROLES.SUPERADMIN, SYSTEM_ROLES.DIMES_ADMIN)
   @Delete(':id')
-  remove(@Param('id', new ParseUUIDPipe()) id: string, @CurrentUser() user: AuthenticatedUser): Promise<Meeting> {
+  remove(@Param('id', new ParseUUIDPipe()) id: string, @CurrentUser() user: AuthenticatedUser): Promise<unknown> {
     return this.meetingsService.remove(id, user);
   }
 }
