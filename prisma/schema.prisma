@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELED
+}
+
+enum AttendanceStatus {
+  ATTENDED
+  ABSENT
+  EXCUSED
+}
+
+enum MinuteStatus {
+  DRAFT
+  FINAL
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Establishment {
+  id           String        @id @default(uuid())
+  name         String
+  code         String?       @unique
+  address      String?
+  users        User[]
+  meetings     Meeting[]
+  participants Participant[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([name])
+}
+
+model User {
+  id                    String           @id @default(uuid())
+  email                 String           @unique
+  passwordHash          String
+  firstName             String
+  lastName              String
+  isActive              Boolean          @default(true)
+  roleId                String
+  establishmentId       String
+  role                  Role             @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  establishment         Establishment    @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  createdMeetings       Meeting[]        @relation("MeetingCreator")
+  createdParticipants   Participant[]    @relation("ParticipantCreator")
+  attendanceRegistries  Attendance[]     @relation("AttendanceRegistrar")
+  createdMinutes        Minute[]         @relation("MinuteCreator")
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@index([roleId])
+  @@index([establishmentId])
+}
+
+model Meeting {
+  id              String             @id @default(uuid())
+  title           String
+  description     String?
+  scheduledAt     DateTime
+  status          MeetingStatus      @default(SCHEDULED)
+  establishmentId String
+  createdById     String
+  establishment   Establishment      @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  createdBy       User               @relation("MeetingCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  participants    MeetingParticipant[]
+  minute          Minute?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([establishmentId, scheduledAt])
+  @@index([createdById])
+}
+
+model Participant {
+  id              String               @id @default(uuid())
+  fullName        String
+  email           String?
+  isInternal      Boolean              @default(true)
+  establishmentId String?
+  createdById     String
+  establishment   Establishment?       @relation(fields: [establishmentId], references: [id], onDelete: SetNull)
+  createdBy       User                 @relation("ParticipantCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  meetings        MeetingParticipant[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([establishmentId])
+  @@index([createdById])
+}
+
+model MeetingParticipant {
+  id           String      @id @default(uuid())
+  meetingId    String
+  participantId String
+  meeting      Meeting     @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  participant  Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  attendance   Attendance?
+  createdAt    DateTime    @default(now())
+
+  @@unique([meetingId, participantId])
+  @@index([participantId])
+}
+
+model Attendance {
+  id                 String           @id @default(uuid())
+  meetingParticipantId String         @unique
+  status             AttendanceStatus
+  registeredById     String
+  registeredBy       User             @relation("AttendanceRegistrar", fields: [registeredById], references: [id], onDelete: Restrict)
+  meetingParticipant MeetingParticipant @relation(fields: [meetingParticipantId], references: [id], onDelete: Cascade)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([registeredById])
+}
+
+model Minute {
+  id           String      @id @default(uuid())
+  meetingId    String      @unique
+  objective    String
+  agenda       String
+  development  String
+  agreements   String
+  observations String?
+  status       MinuteStatus @default(DRAFT)
+  createdById  String
+  finalizedAt  DateTime?
+  meeting      Meeting     @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  createdBy    User        @relation("MinuteCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([createdById])
+}
