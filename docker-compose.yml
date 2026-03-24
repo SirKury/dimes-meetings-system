@@ -13,6 +13,40 @@ services:
       - '5432:5432'
     volumes:
       - dimes_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d dimes_meetings']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: dimes-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PORT: 3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '3001:3001'
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: dimes-web
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+    depends_on:
+      - api
+    ports:
+      - '3000:3000'
 
 volumes:
   dimes_postgres_data:

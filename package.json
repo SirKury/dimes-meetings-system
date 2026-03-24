@@ -11,7 +11,8 @@
     "typecheck": "turbo run typecheck",
     "db:generate": "pnpm --filter @dimes/prisma db:generate",
     "db:migrate": "pnpm --filter @dimes/prisma db:migrate",
-    "db:seed": "pnpm --filter @dimes/prisma db:seed"
+    "db:seed": "pnpm --filter @dimes/prisma db:seed",
+    "test": "turbo run test"
   },
   "devDependencies": {
     "turbo": "^2.1.3",

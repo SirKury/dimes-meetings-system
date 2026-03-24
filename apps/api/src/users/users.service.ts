@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
+import { handlePrismaCreateError } from '../common/prisma-error.util';
 import { PrismaService } from '../prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
@@ -18,7 +19,7 @@ export class UsersService {
     });
   }
 
-  create(dto: CreateUserDto): Promise<User> {
+  async create(dto: CreateUserDto): Promise<User> {
     const data: Prisma.UserCreateInput = {
       email: dto.email.toLowerCase(),
       passwordHash: dto.password,
@@ -29,6 +30,10 @@ export class UsersService {
       establishment: { connect: { id: dto.establishmentId } }
     };
 
-    return this.prisma.user.create({ data });
+    try {
+      return await this.prisma.user.create({ data });
+    } catch (error) {
+      handlePrismaCreateError(error, 'user');
+    }
   }
 }
